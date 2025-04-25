@@ -1,0 +1,86 @@
+{
+    "users": [
+      {
+        "name": "publisher_user",
+        "password": "pubpass",
+        "tags": "administrator"
+      },
+      {
+        "name": "subscriber_user_1",
+        "password": "sub1pass",
+        "tags": "administrator"
+      },
+      {
+        "name": "subscriber_user_2",
+        "password": "sub2pass",
+        "tags": "administrator"
+      }
+    ],
+    "vhosts": [
+      { "name": "/" }
+    ],
+    "permissions": [
+      {
+        "user": "publisher_user",
+        "vhost": "/",
+        "configure": ".*",
+        "write": "^eventos$",
+        "read": ""
+      },
+      {
+        "user": "subscriber_user_1",
+        "vhost": "/",
+        "configure": "",
+        "write": "",
+        "read": "^sub1$"
+      },
+      {
+        "user": "subscriber_user_2",
+        "vhost": "/",
+        "configure": "",
+        "write": "",
+        "read": "^sub2$"
+      }
+    ],
+    "exchanges": [
+      {
+        "name": "eventos",
+        "vhost": "/",
+        "type": "fanout",
+        "durable": true,
+        "auto_delete": false,
+        "internal": false
+      }
+    ],
+    "queues": [
+      {
+        "name": "sub1",
+        "vhost": "/",
+        "durable": true
+      },
+      {
+        "name": "sub2",
+        "vhost": "/",
+        "durable": true
+      }
+    ],
+    "bindings": [
+      {
+        "source": "eventos",
+        "vhost": "/",
+        "destination": "sub1",
+        "destination_type": "queue",
+        "routing_key": "",
+        "arguments": {}
+      },
+      {
+        "source": "eventos",
+        "vhost": "/",
+        "destination": "sub2",
+        "destination_type": "queue",
+        "routing_key": "",
+        "arguments": {}
+      }
+    ]
+  }
+  

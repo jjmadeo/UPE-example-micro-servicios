@@ -1,0 +1,99 @@
+services:
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"     # Puerto para apps
+      - "15672:15672"   # UI Web de administración
+    environment:
+      RABBITMQ_DEFAULT_USER: user
+      RABBITMQ_DEFAULT_PASS: pass
+      RABBITMQ_LOAD_DEFINITIONS: /etc/rabbitmq/definitions.json
+    volumes:
+      - ./rabbitmq/definitions.json:/etc/rabbitmq/definitions.json
+      - ./rabbitmq/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "check_running"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  mariadb-usuarios:
+    build:
+      context: ./mariadb-usuarios/
+    container_name: mariadb_personas
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpass123
+    ports:
+      - "3308:3306"
+    healthcheck:
+      test: ["CMD-SHELL", "echo > /dev/tcp/localhost/3306"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 20s
+
+  mariadb-wallet:
+    build:
+      context: ./mariadb-wallet/
+    container_name: mariadb_wallet
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpass123
+    ports:
+      - "3309:3306"
+    healthcheck:
+      test: ["CMD-SHELL", "echo > /dev/tcp/localhost/3306"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 20s
+
+  mariadb-cards:
+    build:
+      context: ./mariadb-cards/
+    container_name: mariadb_cards
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpass123
+    ports:
+      - "3307:3306"
+    healthcheck:
+      test: ["CMD-SHELL", "echo > /dev/tcp/localhost/3306"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 20s
+
+  app-usuarios:
+    build: ./ms-usuarios
+    container_name: ms-usuarios
+    ports:
+      - "3000:3000"
+    env_file:
+      - ./ms-usuarios/.env
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    
+
+  app-wallet:
+    build: ./ms-wallet
+    container_name: ms-wallet
+    ports:
+      - "4000:4000"
+    env_file:
+      - ./ms-wallet/.env
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+     
+
+  app-cards:
+    build: ./ms-cards
+    container_name: ms-cards
+    ports:
+      - "5000:5000"
+    environment:
+      - ASPNETCORE_URLS=http://+:5000
+    depends_on:
+      rabbitmq:
+        condition: service_healthy

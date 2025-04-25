@@ -1,0 +1,26 @@
+# Node modules
+node_modules/
+
+# Environment variables
+.env
+.env.*
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# Debugging
+.vscode/launch.json
+.vscode/tasks.json
+
+# VSCode settings (opcional, si querés ignorar configuraciones personales)
+.vscode/
+
+# OS junk files
+.DS_Store
+Thumbs.db
+
+# Optional: build/dist folders
+dist/
+build/
