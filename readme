@@ -1,0 +1,72 @@
+# 🧩 Microservicios de Usuarios, Wallet y Tarjetas
+
+Este proyecto implementa una arquitectura de microservicios basada en eventos, donde tres servicios independientes se comunican entre sí a través de **RabbitMQ**. Cada microservicio se encarga de una funcionalidad específica:
+
+## 📦 Microservicios
+
+### 1. `ms-usuarios` (Node.js + Express)
+- **Puerto:** `3000`
+- **Base de datos:** `mariadb-usuarios`
+- **Responsabilidad:** Alta de usuarios y publicación del evento `usuario_creado`.
+
+#### Endpoints:
+- `POST /usuario`: Crea un nuevo usuario y publica evento en RabbitMQ.
+- `GET /usuarios`: Devuelve todos los usuarios.
+
+---
+
+### 2. `ms-wallet` (Go)
+- **Puerto:** `4000`
+- **Base de datos:** `mariadb-wallet`
+- **Responsabilidad:** Escuchar eventos de `usuario_creado` y generar una cuenta de wallet asociada.
+
+#### Endpoints:
+- `GET /accounts`: Lista todas las cuentas.
+- `GET /accounts/:id`: Obtiene una cuenta por ID.
+
+---
+
+### 3. `ms-cards` (.NET 7)
+- **Puerto:** `5000`
+- **Base de datos:** `mariadb-cards`
+- **Responsabilidad:** Escuchar eventos de `usuario_creado` y emitir una tarjeta.
+
+#### Endpoints:
+- `GET /tarjetas`: Lista todas las tarjetas emitidas.
+- `GET /tarjetas/:id`: Tarjeta por ID (opcional si se implementa).
+
+---
+
+## 🐇 Comunicación Asíncrona
+
+Utiliza **RabbitMQ** con los siguientes componentes:
+
+- **Exchange**: `eventos` (tipo `fanout`)
+- **Queues**:
+  - `sub1` → Escuchada por `ms-wallet`
+  - `sub2` → Escuchada por `ms-cards`
+
+Cada vez que se crea un usuario, el evento se publica en el exchange y los demás servicios reaccionan.
+
+---
+
+## 🐬 Bases de datos
+
+- Cada microservicio tiene su propia base de datos MariaDB con sus respectivas tablas:
+  - `usuarios`
+  - `wallet_accounts`
+  - `cards_emitidas`
+
+---
+
+## 🚀 Cómo levantar el entorno
+
+```bash
+
+docker compose up --build --force-recreate
+
+o estos
+
+docker compose build
+docker compose up
+
